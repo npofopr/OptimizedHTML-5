@@ -6,17 +6,18 @@
 	"author": "WebDesign Master",
 	"type": "module",
 	"browserslist": [
-		"last 10 versions"
+		"> 1%",
+		"last 2 versions"
 	],
 	"license": "ISC",
 	"scripts": {
-		"start": "gulp",
-		"build": "gulp build"
+		"start": "cross-env MODE=development gulp",
+		"build": "cross-env MODE=production gulp build"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.15.5",
 		"@babel/preset-env": "^7.15.6",
-		"autoprefixer": "^10.3.6",
+		"autoprefixer": "^10.3.7",
 		"babel-loader": "^8.2.2",
 		"babel-plugin-module-resolver": "^4.1.0",
 		"babel-plugin-root-import": "^6.6.0",
@@ -37,10 +38,16 @@
 		"gulp-sass": "^5.0.0",
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-stylus": "^2.7.0",
-		"postcss": "^8.3.8",
+		"postcss": "^8.3.9",
+		"postcss-100vh-fix": "^1.0.2",
+		"postcss-center": "^1.1.0",
+		"postcss-csso": "^5.0.1",
+		"postcss-flexbugs-fixes": "^5.0.2",
+		"postcss-preset-env": "^6.7.0",
+		"postcss-pxtorem": "^6.0.0",
 		"sass": "^1.42.1",
 		"terser-webpack-plugin": "^5.2.4",
-		"webpack": "^5.56.0",
+		"webpack": "^5.56.1",
 		"webpack-stream": "^7.0.0"
 	}
 }

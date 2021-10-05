@@ -21,11 +21,42 @@ import stylglob      from 'gulp-noop'
 import postCss       from 'gulp-postcss'
 import cssnano       from 'cssnano'
 import autoprefixer  from 'autoprefixer'
+import iOSvhFix  from 'postcss-100vh-fix'
+import cssPresetEnv from 'postcss-preset-env'
+import center from 'postcss-center'
+import flexbugsfixes  from 'postcss-flexbugs-fixes'
+import pxtorem from 'postcss-pxtorem'
+import csso from 'postcss-csso'
 import imagemin      from 'gulp-imagemin'
 import changed       from 'gulp-changed'
 import concat        from 'gulp-concat'
 import rsync         from 'gulp-rsync'
 import del           from 'del'
+
+const mode = process.env.MODE || 'development';
+
+// Список и настройки плагинов postCSS
+let postCssPlugins = [
+  autoprefixer({ grid: 'autoplace' }),
+  iOSvhFix(),
+  center(),
+  flexbugsfixes(),
+  pxtorem({
+    rootValue: 16,
+    unitPrecision: 5,
+    propWhiteList: ['font', 'font-size', 'line-height', 'letter-spacing'],
+    selectorBlackList: [],
+    replace: true,
+    mediaQuery: false,
+    minPixelValue: 0
+  }),
+  // cssPresetEnv(/* pluginOptions */),
+  // cssnano({ preset: ['default', { discardComments: { removeAll: true } }] }),
+  csso({
+    comments: false,
+    sourceMap: mode === 'development' ? true : false
+  })
+];
 
 function browsersync() {
 	browserSync.init({
@@ -43,10 +74,13 @@ function browsersync() {
 function scripts() {
 	return src(['app/js/*.js', '!app/js/*.min.js'])
 		.pipe(webpackStream({
-			mode: 'production',
+			mode: mode,
 			performance: { hints: false },
+      devtool: mode === 'development' ? 'inline-source-map' : false,
 			plugins: [
-				new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery', 'window.jQuery': 'jquery' }), // jQuery (npm i jquery)
+				new webpack.ProvidePlugin({
+          // $: 'jquery', jQuery: 'jquery', 'window.jQuery': 'jquery'
+        }), // jQuery (npm i jquery)
 			],
 			module: {
 				rules: [
@@ -81,15 +115,16 @@ function scripts() {
 }
 
 function styles() {
-	return src([`app/styles/${preprocessor}/*.*`, `!app/styles/${preprocessor}/_*.*`])
+  const fileList = [
+    `app/styles/${preprocessor}/*.*`,
+    `!app/styles/${preprocessor}/_*.*`
+  ];
+	return src(fileList, { sourcemaps: true })
 		.pipe(eval(`${preprocessor}glob`)())
 		.pipe(eval(preprocessor)({ 'include css': true }))
-		.pipe(postCss([
-			autoprefixer({ grid: 'autoplace' }),
-			cssnano({ preset: ['default', { discardComments: { removeAll: true } }] })
-		]))
+    .pipe(postCss(postCssPlugins))
 		.pipe(concat('app.min.css'))
-		.pipe(dest('app/css'))
+    .pipe(dest(`app/css`, { sourcemaps: mode === 'development' ? '.' : false }))
 		.pipe(browserSync.stream())
 }
 
